@@ -96,6 +96,16 @@ def newsell(request):
     return HttpResponse(200)
 
 @csrf_exempt
+def change_sell(requst):
+    data = requst.POST['newsell'].split(";")
+    file = requst.FILES['image']
+    user = Token.objects.get(key = data[0]).user
+    item = ItemProfile.objects.get(user = user, label = data[5])
+    item.change_item(Category.objects.get(label = data[1]), label=data[2], image=file,
+                     price=float(data[3]), desc=data[4])
+    return HttpResponse(200)
+
+@csrf_exempt
 def find_items(request):
     data = get_data(request)
     items = ItemProfile.objects.filter(category_type=Category.objects.get(label=data['param']))
@@ -110,13 +120,18 @@ def item_info(request):
     data = get_data(request)
     item = ItemProfile.objects.get(label=data['item'])
     response = {'label': item.get_label(), 'user_phone': UserProfile.objects.get(user = item.get_user()).get_phone(),
-                'image': item.get_image().url, 'price': item.get_price()}
+                'image': item.get_image().url, 'price': item.get_price(), 'user_owner': str(item.get_user()),
+               'user_getter': str(Token.objects.get(key = data['token']).user), 'item_id': str(item.id),
+                'category': item.get_category(), 'desc': item.get_desc()}
     return HttpResponse(json.dumps(response))
 
-def index(request):
-    return render(request, 'chat/index.html')
+@csrf_exempt
+def get_list_sells(request):
+    data = get_data(request)
+    sells_mas = ItemProfile.objects.all()
+    result = []
+    for i in range(len(sells_mas)):
+        if sells_mas[i].get_user() == Token.objects.get(key = data['token']).user:
+            result.append(sells_mas[i].get_label())
+    return HttpResponse(json.dumps({'listSells': result}))
 
-def room(request, room_name):
-    return render(request, 'chat/room.html', {
-        'room_name': room_name
-    })

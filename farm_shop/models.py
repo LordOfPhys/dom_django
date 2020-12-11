@@ -91,6 +91,9 @@ class Category(models.Model):
     def __str__(self):
         return self.label
 
+    def get_label(self):
+        return self.label
+
 class ItemProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category_type = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -99,8 +102,19 @@ class ItemProfile(models.Model):
     price = models.FloatField(default=0)
     description = models.TextField(default='Описание товара')
 
+    def change_item(self, category, label, image, price, desc):
+        self.category_type = category
+        self.label = label
+        self.image = image
+        self.price = price
+        self.description = desc
+        self.save()
+
     def __str__(self):
         return self.label
+
+    def get_category(self):
+        return self.category_type.get_label()
 
     def get_label(self):
         return self.label
@@ -113,6 +127,9 @@ class ItemProfile(models.Model):
 
     def get_price(self):
         return self.price
+
+    def get_desc(self):
+        return self.description
 
 class ItemNews(models.Model):
     label = models.CharField(max_length=100, default='Заголовок', unique=True)

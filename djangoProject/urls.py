@@ -22,7 +22,6 @@ from django.conf import settings
 from django.conf.urls import include
 
 urlpatterns = [
-    path('chat/', include('farm_shop.urls')),
     path('admin/', admin.site.urls),
     url(r'^login/$', views.login, name = 'login'),
     url(r'^get_news/$', views.get_news, name = 'get_news'),
@@ -33,5 +32,7 @@ urlpatterns = [
     url(r'^newsell/$', views.newsell, name = 'newsell'),
     url(r'^find_items/$', views.find_items, name = 'find_items'),
     url(r'^item_info/$', views.item_info, name = 'item_info'),
+    url(r'^get_list_sells/$', views.get_list_sells, name = 'get_list_sells'),
+    url(r'^change_sell/$', views.change_sell, name='change_sell'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
