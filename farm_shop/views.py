@@ -33,7 +33,6 @@ def login(request):
 
 @csrf_exempt
 def get_news(request):
-    data = get_data(request)
     if type_request(request):
         return HttpResponse(500)
     news_array = ItemNews.objects.all()
@@ -46,6 +45,8 @@ def get_news(request):
     response = []
     while i < 10 and i < len(mas):
         response.append(news_array[i].get_label())
+        response.append(news_array[i].get_description())
+        response.append(news_array[i].get_image().url)
         i += 1
     return HttpResponse(json.dumps({'news': response}))
 
@@ -83,7 +84,7 @@ def change_profile(request):
     data = request.POST['change_body']
     file = request.FILES['image']
     data = data.split(' ')
-    UserProfile.objects.get(user = Token.objects.get(key = data[0]).user).set_profile(data[1], data[2], data[4], data[3], data[5], file)
+    UserProfile.objects.get(user = Token.objects.get(key = data[0]).user).set_profile(data[1], data[2], data[5], data[6], data[3] + " " + data[4], file)
     return HttpResponse(200)
 
 @csrf_exempt
@@ -111,17 +112,20 @@ def find_items(request):
     items = ItemProfile.objects.filter(category_type=Category.objects.get(label=data['param']))
     result = []
     for i in items:
-        item = i.get_label()
-        result.append(item)
+        result.append(i.get_label())
+        result.append(i.get_desc())
+        result.append(i.get_image().url)
     return HttpResponse(json.dumps({'items': result}))
 
 @csrf_exempt
 def item_info(request):
     data = get_data(request)
     item = ItemProfile.objects.get(label=data['item'])
+    user = UserProfile.objects.get(user=item.get_user())
     response = {'label': item.get_label(), 'user_phone': UserProfile.objects.get(user = item.get_user()).get_phone(),
                 'image': item.get_image().url, 'price': item.get_price(), 'user_owner': str(item.get_user()),
-               'user_getter': str(Token.objects.get(key = data['token']).user), 'item_id': str(item.id),
+                'user_name': str(user.get_first_name() + " " + user.get_last_name()),
+                'user_getter': str(Token.objects.get(key = data['token']).user), 'item_id': str(item.id),
                 'category': item.get_category(), 'desc': item.get_desc()}
     return HttpResponse(json.dumps(response))
 
@@ -133,5 +137,7 @@ def get_list_sells(request):
     for i in range(len(sells_mas)):
         if sells_mas[i].get_user() == Token.objects.get(key = data['token']).user:
             result.append(sells_mas[i].get_label())
+            result.append(sells_mas[i].get_price())
+            result.append(sells_mas[i].get_image().url)
     return HttpResponse(json.dumps({'listSells': result}))
 
